@@ -1,0 +1,10 @@
+targets:
+  $default:
+    builders:
+      source_gen:combining_builder:
+        options:
+          # Lint headers for generated parts (go_router_builder now; freezed,
+          # json_serializable and drift later), so generated files can stay
+          # inside the analyzer's scope and still report compile errors.
+          ignore_for_file:
+            - type=lint

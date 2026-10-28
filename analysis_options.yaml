@@ -1,0 +1,36 @@
+# Flutter's recommended lints plus strict type checks and a few extra rules
+# (see 00-CONVENTIONS.md §2). `fvm flutter analyze` must stay clean.
+include: package:flutter_lints/flutter.yaml
+
+analyzer:
+  # Generated files are *not* excluded: the analyzer must still see their
+  # compile errors. Their lints are silenced by `ignore_for_file: type=lint`
+  # headers, which the generators add (source_gen via build.yaml).
+  exclude:
+    - build/**
+    - android/**
+    - ios/**
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
+
+linter:
+  rules:
+    always_declare_return_types: true
+    always_use_package_imports: true
+    avoid_dynamic_calls: true
+    avoid_redundant_argument_values: true
+    cancel_subscriptions: true
+    close_sinks: true
+    directives_ordering: true
+    prefer_const_constructors: true
+    prefer_const_constructors_in_immutables: true
+    prefer_const_declarations: true
+    prefer_const_literals_to_create_immutables: true
+    prefer_final_in_for_each: true
+    prefer_final_locals: true
+    prefer_single_quotes: true
+    sort_child_properties_last: true
+    unawaited_futures: true
+    use_super_parameters: true
