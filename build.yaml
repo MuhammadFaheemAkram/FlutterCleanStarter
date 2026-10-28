@@ -1,10 +1,29 @@
 targets:
   $default:
     builders:
+      drift_dev:
+        options:
+          # Store DateTimes as ISO-8601 text (microsecond precision) instead of
+          # whole Unix seconds (conventions §11.14). Every value is stored in
+          # UTC, so the text sorts in time order. Calendar days are not
+          # DateTimes: they are `yyyymmdd` integers (`CalendarDate`).
+          store_date_time_values_as_text: true
+          # `drift_dev make-migrations`: where the database lives, where each
+          # exported schema version is kept, and where the generated
+          # migration tests go.
+          databases:
+            app_database: lib/core/database/app_database.dart
+          schema_dir: drift_schemas/
+          test_dir: test/drift/
+      json_serializable:
+        options:
+          # Every DTO checks its JSON: a wrong type names the field instead
+          # of failing somewhere later.
+          checked: true
       source_gen:combining_builder:
         options:
-          # Lint headers for generated parts (go_router_builder now; freezed,
-          # json_serializable and drift later), so generated files can stay
-          # inside the analyzer's scope and still report compile errors.
+          # Lint headers for generated parts (go_router_builder, freezed,
+          # json_serializable, drift), so generated files can stay inside the
+          # analyzer's scope and still report compile errors.
           ignore_for_file:
             - type=lint

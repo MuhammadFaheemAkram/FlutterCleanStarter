@@ -1,0 +1,49 @@
+{
+  "tasks": [
+    {
+      "id": "A1B2C3D4-0001-4A1B-8C2D-000000000001",
+      "title": "Welcome to Flutter Clean Starter",
+      "notes": "This sample task is seeded from bundled JSON through the fake API. Delete the Tasks feature to start your own app.",
+      "dueInDays": null,
+      "isCompleted": false,
+      "createdAt": "2026-07-20T09:00:00Z",
+      "updatedAt": "2026-07-20T09:00:00Z"
+    },
+    {
+      "id": "A1B2C3D4-0002-4A1B-8C2D-000000000002",
+      "title": "Explore the architecture",
+      "notes": "Open docs/ARCHITECTURE.md to see how the layers fit together.",
+      "dueInDays": 2,
+      "isCompleted": false,
+      "createdAt": "2026-07-21T10:30:00Z",
+      "updatedAt": "2026-07-21T10:30:00Z"
+    },
+    {
+      "id": "A1B2C3D4-0003-4A1B-8C2D-000000000003",
+      "title": "Run the test suite",
+      "notes": "Run fvm flutter test to see the example tests for every layer.",
+      "dueInDays": null,
+      "isCompleted": true,
+      "createdAt": "2026-07-19T08:15:00Z",
+      "updatedAt": "2026-07-22T14:00:00Z"
+    },
+    {
+      "id": "A1B2C3D4-0004-4A1B-8C2D-000000000004",
+      "title": "Swap the fake API for a real one",
+      "notes": "FakeTaskApi implements TaskApi: write a dio-based implementation and register it in the DI module instead.",
+      "dueInDays": -1,
+      "isCompleted": false,
+      "createdAt": "2026-07-22T11:45:00Z",
+      "updatedAt": "2026-07-22T11:45:00Z"
+    },
+    {
+      "id": "A1B2C3D4-0005-4A1B-8C2D-000000000005",
+      "title": "Rename the project",
+      "notes": "Follow docs/TEMPLATE_USAGE.md to rename the package, the app IDs and the display name with tool/rename.dart.",
+      "dueInDays": null,
+      "isCompleted": false,
+      "createdAt": "2026-07-23T16:20:00Z",
+      "updatedAt": "2026-07-23T16:20:00Z"
+    }
+  ]
+}

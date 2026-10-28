@@ -14,7 +14,9 @@ final GetIt getIt = GetIt.instance;
 /// `AppEnvironment` in the iOS one).
 ///
 /// `injectable` generates `getIt.init()` from the annotations under `lib/`.
-/// It becomes async once the preferences must be ready before the first
-/// frame (`@preResolve`).
+/// It is async because the `@preResolve` dependencies (the preferences) must
+/// be ready before the first frame.
 @InjectableInit()
-void configureDependencies() => getIt.init();
+Future<void> configureDependencies() async {
+  await getIt.init();
+}

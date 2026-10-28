@@ -32,8 +32,8 @@ The template is built in **strict, reviewable phases**. Each phase ends with:
 | Phase | Scope | Status |
 |------:|-------|:------:|
 | 1 | Foundation: FVM project, design system base, typed routes with a 2-tab shell and the task routes, DI root, CI | ✅ Done |
-| 2 | Core data layer: models, drift, the fake API, repositories, settings storage | ⏳ Next |
-| 3 | The Tasks list | |
+| 2 | Core data layer: models, drift, the fake API, repositories, use cases, settings storage | ✅ Done |
+| 3 | The Tasks list | ⏳ Next |
 | 4 | Task detail and the Add / Edit form | |
 | 5 | Settings | |
 | 6 | Documentation, `tool/rename.dart`, CI | |
@@ -61,11 +61,15 @@ Packages arrive in the phase that first needs them, and the list stays short: ev
 | Platforms | Android · iOS | 1 |
 | UI | [`material_ui`](https://pub.dev/packages/material_ui): Material 3 as a standalone package | 1 |
 | Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`) | 1 |
-| Dependency injection | `get_it` + `injectable` (a code-generated composition root) | 1 |
+| Dependency injection | `get_it` + `injectable` (a code-generated composition root, `@preResolve` for the preferences) | 1 |
+| Models | `freezed` (immutable domain models) + `json_serializable` (checked DTOs) | 2 |
+| Database | `drift` + `drift_flutter` (SQLite, typed queries, streams; schema exported from v1) | 2 |
+| Preferences | `shared_preferences` (`SharedPreferencesWithCache`, loaded before the first frame) | 2 |
+| Time and text | `clock` (an injectable "now"), `characters` (title lengths in grapheme clusters) | 2 |
 | Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
-| Testing | `flutter_test` | 1 |
+| Testing | `flutter_test`, `fake_async`, an in-memory drift database and preferences store | 1 |
 
-Planned: `freezed`, `json_serializable`, `drift`, `shared_preferences`, `clock`, `intl` (Phase 2); `flutter_bloc`, `bloc_test`, `mocktail` (Phase 3); `characters`, `cupertino_ui` (Phase 4); `dynamic_color`, `package_info_plus` (Phase 5).
+Planned: `flutter_bloc`, `bloc_test`, `mocktail`, `intl` (Phase 3); `cupertino_ui` (Phase 4); `dynamic_color`, `package_info_plus` (Phase 5).
 
 ---
 
@@ -82,12 +86,29 @@ View ─▶ Cubit ─▶ UseCase ─▶ Repository ─▶ drift (the store) / th
 ```
 lib/
 ├── app/        → root widget (MaterialApp.router, themes)
-├── core/       → design system, navigation, (later) the database, the fake API, settings storage
-├── data/       → repository implementations + mappers               (Phase 2)
-├── domain/     → models, pure rules, contracts, use cases            (Phase 2)
+├── core/       → common (Result, errors), design system, navigation, database, network (the fake API), storage
+├── data/       → repository implementations + mappers
+├── domain/     → models, pure rules, repository contracts, use cases (pure Dart)
 ├── features/   → one folder per screen (Page + View + Cubit)
 └── di/         → composition root (get_it + injectable)
 ```
+
+**Data flow:**
+
+```
+                 ┌──────────── reads: drift streams ────────────┐
+                 ▼                                              │
+View ◀── Cubit ◀── UseCase ◀── TaskRepository ── TasksDao ── drift (SQLite)
+                                   │                    ▲
+                                   │ seed · refresh ·   │ one transaction each
+                                   ▼ reset              │
+                                TaskApi (FakeTaskApi) ──┘  TaskDto → Task → TaskRow
+```
+
+- **drift is the source of truth.** Screens watch its streams; the API only seeds the store on first launch, adds the server's new tasks on a refresh, and replaces everything on Reset demo data.
+- **The device owns the tasks.** Adding, editing, completing and deleting are local writes. A refresh never overwrites a stored task (`ON CONFLICT DO NOTHING`), and a tombstone keeps a deleted task from coming back.
+- **Three models per record:** `TaskDto` (the API's JSON) → `Task` (the app's) ↔ `TaskRow` (drift), with mappers that check the server's data before anything is written.
+- **Writes return a `Result`** (`Ok` or `Err` with a sealed `AppException`) and never throw.
 
 **Navigation:**
 
@@ -122,12 +143,37 @@ FlutterCleanStarter/
 │   ├── main.dart                   # binding → configureDependencies() → runApp
 │   ├── app/                        # StarterApp: themes and the router
 │   ├── core/
+│   │   ├── common/                 # Result, AppException, guardWrite, IdGenerator
 │   │   ├── design_system/          # theme/ (AppTheme, AppColors, tokens), widgets/ (state views, SectionHeader), large_text
-│   │   └── navigation/             # app_routes (+ .g.dart), app_router, the Close fallback
-│   ├── features/                   # shell, tasks, task_detail, task_form, settings
-│   └── di/                         # injection.dart (+ .config.dart)
+│   │   ├── navigation/             # app_routes (+ .g.dart), app_router, the Close fallback
+│   │   ├── network/                # AssetJsonLoader, NetworkSimulator, [TaskApi, FakeTaskApi, dto/TaskDto]
+│   │   ├── database/               # AppDatabase, [tables/tasks, daos/tasks_dao]
+│   │   └── storage/                # SettingsLocalDataSource, [TasksPreferences]
+│   ├── data/
+│   │   ├── mapper/                 # [task_mappers]
+│   │   └── repository/             # SettingsRepositoryImpl, [TaskRepositoryImpl]
+│   ├── domain/
+│   │   ├── model/                  # AppSettings, CalendarDate, [Task, TaskDraft]
+│   │   ├── calculation/            # [task_rules: validation, overdue, ordering]
+│   │   ├── repository/             # SettingsRepository, [TaskRepository]
+│   │   └── usecase/                # settings_use_cases, [task_use_cases]
+│   ├── features/                   # shell, [tasks, task_detail, task_form], settings
+│   └── di/                         # injection.dart (+ .config.dart), app_module.dart
+├── assets/json/                    # [seed_tasks.json]
+├── drift_schemas/                  # every exported schema version
 └── test/                           # mirrors lib/, plus app/ (the accessibility tour) and helpers/
 ```
+
+`[…]` marks the sample feature: what you delete to start your own app.
+
+---
+
+## 🌐 The Fake API and Persistence
+
+- **No server, no key.** `FakeTaskApi` implements `TaskApi` by reading `assets/json/seed_tasks.json` after a simulated 600 ms delay. The seed's due dates are relative (`"dueInDays": 2`), so a fresh demo always has one task due soon and one overdue; once stored, a due date never moves. To see the offline handling, set `NetworkSimulator.shouldThrowError` to `true`.
+- **Tasks live in drift** (`tasks`, plus `deleted_tasks` tombstones). The database enforces its own rules with `CHECK`s: a title that isn't blank, UTC times, an update never before the creation.
+- **Settings live in `SharedPreferencesWithCache`,** loaded before the first frame. Only the keys that changed are written.
+- **Replacing the fake API** means writing a `TaskApi` with `dio` (or `http`) and registering it instead of `FakeTaskApi`: nothing above the data layer changes.
 
 ---
 
@@ -166,10 +212,14 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**49 tests** after Phase 1:
+**169 tests** after Phase 2:
+- **Domain:** `CalendarDate`; the title and notes rules at their limits (grapheme clusters); overdue at its edges; the list's order; the use cases refusing what the form would.
+- **Database (in memory):** every `CHECK`; seed, merge and reset each in one transaction; a refresh that never overwrites an edit or revives a deleted task; delete and Undo; the exported schema matching the tables.
+- **Network and mappers:** the bundled seed decodes and maps, its relative dates, latency and failures, damaged JSON; every mapping rule.
+- **Repositories:** on a real data stack (`DataStack`: in-memory drift and preferences, the real fake API, a fixed clock) with a scripted API for failures: seeding exactly once, refresh, add, edit, toggle, delete and restore, reset, offline and damaged data; settings read, defaults, only changed keys written.
 - **Navigation:** typed locations, ids encoded; the app on its real DI graph: both tabs, a tab keeping its screen, Add as a full-screen dialog with Close, a task pushed above the tabs with Back, Edit over its task, links (`/tasks/new`, `/tasks/t1`, `/tasks/t1/edit`) with a Close button, an unknown location.
 - **Design system:** the themes (from the seed, from any seed or scheme), `AppColors` (`lerp`, `copyWith`, the context shorthand), and WCAG AA contrast of `overdue` and `done` on the page, cards and filled fields in both themes; the large-text rule.
-- **DI:** the real composition root builds.
+- **DI:** the real composition root resolves every repository and use case, with the settings loaded before the first frame.
 - **The accessibility tour:** every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
@@ -188,6 +238,8 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 |---|---|---|---|
 | UI | Jetpack Compose | SwiftUI | widgets + `material_ui` (adaptive where it matters) |
 | Navigation | Navigation Compose, bottom nav | `TabView` + `NavigationStack` + `Route` | `StatefulShellRoute` + typed routes |
+| Persistence | Room + DataStore | SwiftData + `@AppStorage` | drift + `SharedPreferencesWithCache` |
+| Fake API | Retrofit-style service | protocol + bundled JSON | `TaskApi` + `FakeTaskApi` reading bundled JSON |
 | DI | Hilt modules | `AppEnvironment` | `get_it` + `injectable` |
 | CI | `android-ci.yml` | `ios-ci.yml` | `flutter-ci.yml` (generated code checked, format, analyze, test) |
 
@@ -198,6 +250,7 @@ The full table (state, persistence, the fake API, tests) grows with the phases.
 ## 📚 Documentation
 
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
+- [Phase 2 — Core Data Layer](docs/PHASE_2_SUMMARY.md)
 
 ---
 
