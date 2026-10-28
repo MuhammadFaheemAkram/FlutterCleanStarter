@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../helpers/app_harness.dart';
+import '../helpers/task_fixtures.dart';
 
 // Every screen, in light and dark, with text at 200%: no layout overflows
 // (an overflow fails the test), tap targets of at least 48 × 48, a label on
@@ -40,9 +41,14 @@ void main() {
         expect(Theme.of(context).brightness, brightness);
       }
 
-      Future<void> expectAccessible(WidgetTester tester) async {
+      Future<void> expectAccessible(
+        WidgetTester tester, {
+        bool tapTargets = true,
+      }) async {
         final handle = tester.ensureSemantics();
-        await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        if (tapTargets) {
+          await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+        }
         await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
         await expectLater(tester, meetsGuideline(textContrastGuideline));
         handle.dispose();
@@ -83,11 +89,46 @@ void main() {
         await expectAccessible(tester);
       });
 
+      testWidgets('New task: the errors after Save', (tester) async {
+        await open(tester, at: '/tasks/new');
+        await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+        await tester.settle();
+        expect(find.text('Enter a title.'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('New task: "Discard changes?"', (tester) async {
+        await open(tester, at: '/tasks/new');
+        await tester.enterText(find.byType(TextField).first, 'Draft');
+        await tester.tapAndSettle(find.byType(CloseButton));
+        expect(find.text('Discard changes?'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('New task: the date picker', (tester) async {
+        await open(tester, at: '/tasks/new');
+        await tester.tapAndSettle(find.text('Due date'));
+        expect(find.byType(DatePickerDialog), findsOneWidget);
+        // Material's own calendar: seven day cells must fit the dialog, so
+        // each is 47.7 px wide, a hair under 48. Not ours to resize; its
+        // labels and contrast are still checked.
+        await expectAccessible(tester, tapTargets: false);
+      });
+
+      testWidgets('Task: "Delete this task?"', (tester) async {
+        await open(tester, at: demoTaskPath);
+        await tester.tapAndSettle(find.byTooltip('Delete'));
+        expect(find.text('Delete this task?'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
       for (final (name, location) in [
         ('Settings', '/settings'),
-        ('Task', '/tasks/t1'),
+        ('Task', demoTaskPath),
+        ('Task not found', '/tasks/nope'),
         ('New task', '/tasks/new'),
-        ('Edit task', '/tasks/t1/edit'),
+        ('Edit task', '$demoTaskPath/edit'),
+        ('Edit task: not found', '/tasks/nope/edit'),
         ('Page not found', '/nowhere'),
       ]) {
         testWidgets(name, (tester) async {

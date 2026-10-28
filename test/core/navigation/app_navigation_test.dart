@@ -1,11 +1,9 @@
-import 'dart:async';
-
-import 'package:flutter_clean_starter/core/navigation/app_routes.dart';
 import 'package:flutter_clean_starter/di/injection.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../helpers/app_harness.dart';
+import '../../helpers/task_fixtures.dart';
 
 void main() {
   tearDown(getIt.reset);
@@ -60,7 +58,7 @@ void main() {
 
     testWidgets("a task's Edit opens the form over it, and Close returns to "
         'it', (tester) async {
-      await pumpStarter(tester, initialLocation: '/tasks/t1');
+      await pumpStarter(tester, initialLocation: demoTaskPath);
 
       await tester.tapAndSettle(find.byTooltip('Edit'));
       expect(appBarTitled('Edit task'), findsOneWidget);
@@ -71,7 +69,7 @@ void main() {
 
     testWidgets('an edit link opens the form over its task, and Close returns '
         'to it', (tester) async {
-      await pumpStarter(tester, initialLocation: '/tasks/t1/edit');
+      await pumpStarter(tester, initialLocation: '$demoTaskPath/edit');
 
       expect(appBarTitled('Edit task'), findsOneWidget);
       await tester.tapAndSettle(find.byType(CloseButton));
@@ -92,10 +90,7 @@ void main() {
       tester,
     ) async {
       await pumpStarter(tester);
-      final context = tester.element(appBarTitled('Tasks'));
-      // The list arrives later; for now, open a task the way a card will.
-      unawaited(const TaskDetailRoute(taskId: 't1').push<void>(context));
-      await tester.pumpAndSettle();
+      await tester.tapAndSettle(find.text('Explore the architecture'));
 
       expect(appBarTitled('Task'), findsOneWidget);
       expect(find.byType(NavigationBar), findsNothing);
@@ -106,7 +101,7 @@ void main() {
     testWidgets('by link, it opens with a Close button to Tasks', (
       tester,
     ) async {
-      await pumpStarter(tester, initialLocation: '/tasks/t1');
+      await pumpStarter(tester, initialLocation: demoTaskPath);
       expect(appBarTitled('Task'), findsOneWidget);
       expect(find.byType(BackButton), findsNothing);
 

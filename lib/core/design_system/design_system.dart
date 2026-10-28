@@ -8,6 +8,8 @@ export 'package:flutter_clean_starter/core/design_system/theme/app_icon_size.dar
 export 'package:flutter_clean_starter/core/design_system/theme/app_radius.dart';
 export 'package:flutter_clean_starter/core/design_system/theme/app_spacing.dart';
 export 'package:flutter_clean_starter/core/design_system/theme/app_theme.dart';
+export 'package:flutter_clean_starter/core/design_system/widgets/confirm_dialog.dart';
+export 'package:flutter_clean_starter/core/design_system/widgets/date_picker_field.dart';
 export 'package:flutter_clean_starter/core/design_system/widgets/empty_state_view.dart';
 export 'package:flutter_clean_starter/core/design_system/widgets/error_view.dart';
 export 'package:flutter_clean_starter/core/design_system/widgets/loading_view.dart';

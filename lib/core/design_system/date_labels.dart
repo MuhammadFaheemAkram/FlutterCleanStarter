@@ -31,3 +31,15 @@ String shortDate(DateTime instant, {required CalendarDate today}) {
 /// [text] with its first letter in upper case.
 String capitalized(String text) =>
     text.isEmpty ? text : text[0].toUpperCase() + text.substring(1);
+
+/// A day in full: "Thursday 29 October 2026".
+String longDayLabel(CalendarDate day) =>
+    DateFormat('EEEE d MMMM y').format(day.toDateTime());
+
+/// An instant on the device's clock, to the minute: "20 Jul 2026, 10:00".
+/// The clock follows the device's 24-hour setting ([use24HourFormat]).
+String dateTimeLabel(DateTime instant, {required bool use24HourFormat}) {
+  final local = instant.toLocal();
+  final time = use24HourFormat ? DateFormat.Hm() : DateFormat.jm();
+  return '${DateFormat('d MMM y').format(local)}, ${time.format(local)}';
+}

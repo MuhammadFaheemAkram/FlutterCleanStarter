@@ -51,3 +51,9 @@ TaskDto taskDto({
     updatedAt: updatedAt ?? created,
   );
 }
+
+/// A task of the bundled demo: "Explore the architecture", due in two days.
+const demoTaskId = 'A1B2C3D4-0002-4A1B-8C2D-000000000002';
+
+/// Its location, as a link would open it.
+const demoTaskPath = '/tasks/$demoTaskId';

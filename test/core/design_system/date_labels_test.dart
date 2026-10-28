@@ -42,4 +42,21 @@ void main() {
     expect(capitalized('today'), 'Today');
     expect(capitalized(''), '');
   });
+
+  test('longDayLabel: the day in full', () {
+    expect(
+      longDayLabel(CalendarDate(2026, 10, 29)),
+      'Thursday 29 October 2026',
+    );
+  });
+
+  test("dateTimeLabel: the day and the time, on the device's clock", () {
+    final instant = DateTime(2026, 7, 20, 14, 5).toUtc();
+
+    expect(dateTimeLabel(instant, use24HourFormat: true), '20 Jul 2026, 14:05');
+    expect(
+      dateTimeLabel(instant, use24HourFormat: false),
+      matches(RegExp(r'^20 Jul 2026, 2:05\sPM$')),
+    );
+  });
 }

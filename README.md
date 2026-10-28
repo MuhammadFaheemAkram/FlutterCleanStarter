@@ -34,8 +34,8 @@ The template is built in **strict, reviewable phases**. Each phase ends with:
 | 1 | Foundation: FVM project, design system base, typed routes with a 2-tab shell and the task routes, DI root, CI | ✅ Done |
 | 2 | Core data layer: models, drift, the fake API, repositories, use cases, settings storage | ✅ Done |
 | 3 | The Tasks list: seed on first launch, toggle, swipe to delete with Undo, pull to refresh, every state | ✅ Done |
-| 4 | Task detail and the Add / Edit form | ⏳ Next |
-| 5 | Settings | |
+| 4 | Task detail and the Add / Edit form: validation, an adaptive date picker, the discard guard, delete with a confirmation | ✅ Done |
+| 5 | Settings | ⏳ Next |
 | 6 | Documentation, `tool/rename.dart`, CI | |
 
 ---
@@ -59,7 +59,7 @@ Packages arrive in the phase that first needs them, and the list stays short: ev
 |------|--------|:-----:|
 | Toolchain | Flutter 3.47.6 · Dart 3.13, pinned per project with [FVM](https://fvm.app) (`.fvmrc`) | 1 |
 | Platforms | Android · iOS | 1 |
-| UI | [`material_ui`](https://pub.dev/packages/material_ui): Material 3 as a standalone package | 1 |
+| UI | [`material_ui`](https://pub.dev/packages/material_ui): Material 3 as a standalone package; [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) for the iOS touches (alerts, the date wheel, switches) | 1, 4 |
 | Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`) | 1 |
 | Dependency injection | `get_it` + `injectable` (a code-generated composition root, `@preResolve` for the preferences) | 1 |
 | Models | `freezed` (immutable domain models) + `json_serializable` (checked DTOs) | 2 |
@@ -70,7 +70,7 @@ Packages arrive in the phase that first needs them, and the list stays short: ev
 | Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
 | Testing | `flutter_test`, `fake_async`, `bloc_test`, `mocktail`, an in-memory drift database and preferences store | 1–3 |
 
-Planned: `cupertino_ui` (Phase 4); `dynamic_color`, `package_info_plus` (Phase 5).
+Planned: `dynamic_color`, `package_info_plus` (Phase 5).
 
 ---
 
@@ -146,7 +146,7 @@ FlutterCleanStarter/
 │   ├── app/                        # StarterApp: themes and the router
 │   ├── core/
 │   │   ├── common/                 # Result, AppException, guardWrite, IdGenerator
-│   │   ├── design_system/          # theme/ (AppTheme, AppColors, tokens), widgets/ (state views, SectionHeader), large_text
+│   │   ├── design_system/          # theme/ (AppTheme, AppColors, tokens), widgets/ (state views, ConfirmDialog, DatePickerField, SectionHeader), date_labels, large_text
 │   │   ├── navigation/             # app_routes (+ .g.dart), app_router, the Close fallback
 │   │   ├── network/                # AssetJsonLoader, NetworkSimulator, [TaskApi, FakeTaskApi, dto/TaskDto]
 │   │   ├── database/               # AppDatabase, [tables/tasks, daos/tasks_dao]
@@ -159,7 +159,7 @@ FlutterCleanStarter/
 │   │   ├── calculation/            # [task_rules: validation, overdue, ordering]
 │   │   ├── repository/             # SettingsRepository, [TaskRepository]
 │   │   └── usecase/                # settings_use_cases, [task_use_cases]
-│   ├── features/                   # shell, [tasks (page, cubit/, widgets/TaskCard), task_detail, task_form], settings
+│   ├── features/                   # shell, [tasks (page, cubit/, widgets/), task_detail (page, cubit/), task_form (page, cubit/)], settings
 │   └── di/                         # injection.dart (+ .config.dart), app_module.dart
 ├── assets/json/                    # [seed_tasks.json]
 ├── drift_schemas/                  # every exported schema version
@@ -214,7 +214,8 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**228 tests** after Phase 3:
+**307 tests** after Phase 4:
+- **Task detail and the form:** both Cubits on the real data stack (`@factoryParam` ids; not found; toggle; delete never flashing "not found"; validation shown only after Save, the use case never reached when invalid; one save at a time; edits elsewhere never overwriting what's typed; what counts as a change); both views with a mocked Cubit (the discard guard on Close and on the system back gesture, Save disabled while saving, closing once); the adaptive confirm dialog and date picker on Android and iOS; app flows (add, add with a date, discard, edit, toggle, delete with and without confirming, links to missing tasks).
 - **The Tasks screen:** the Cubit on the real data stack (the seed's loading, error and Try again with no "No tasks" flash; refresh messages; toggle; delete at once, Undo, a failed delete; changes from elsewhere); the view in every state with a mocked Cubit (swipe, pull, the SnackBars once); the card (overdue, due, done, the icon at large text, screen-reader labels and a Delete action); app flows on the real DI graph, including the Undo SnackBar sitting above the Add button.
 - **Domain:** `CalendarDate`; the title and notes rules at their limits (grapheme clusters); overdue at its edges; the list's order; the use cases refusing what the form would.
 - **Database (in memory):** every `CHECK`; seed, merge and reset each in one transaction; a refresh that never overwrites an edit or revives a deleted task; delete and Undo; the exported schema matching the tables.
@@ -223,7 +224,7 @@ fvm flutter test
 - **Navigation:** typed locations, ids encoded; the app on its real DI graph: both tabs, a tab keeping its screen, Add as a full-screen dialog with Close, a task pushed above the tabs with Back, Edit over its task, links (`/tasks/new`, `/tasks/t1`, `/tasks/t1/edit`) with a Close button, an unknown location.
 - **Design system:** the themes (from the seed, from any seed or scheme), `AppColors` (`lerp`, `copyWith`, the context shorthand), and WCAG AA contrast of `overdue` and `done` on the page, cards and filled fields in both themes; the large-text rule.
 - **DI:** the real composition root resolves every repository and use case, with the settings loaded before the first frame.
-- **The accessibility tour:** every screen and state (Tasks: the demo, empty, offline, the Undo SnackBar), in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
+- **The accessibility tour:** every screen and state (Tasks: the demo, empty, offline, the Undo SnackBar; a task, not found, its Delete dialog; the form with its errors, the discard dialog and the date picker), in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -257,6 +258,7 @@ The full table (state, persistence, the fake API, tests) grows with the phases.
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
 - [Phase 2 — Core Data Layer](docs/PHASE_2_SUMMARY.md)
 - [Phase 3 — The Tasks List](docs/PHASE_3_SUMMARY.md)
+- [Phase 4 — Create / Edit + Detail](docs/PHASE_4_SUMMARY.md)
 
 ---
 

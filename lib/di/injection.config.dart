@@ -39,6 +39,10 @@ import 'package:flutter_clean_starter/domain/usecase/settings_use_cases.dart'
     as _i726;
 import 'package:flutter_clean_starter/domain/usecase/task_use_cases.dart'
     as _i749;
+import 'package:flutter_clean_starter/features/task_detail/cubit/task_detail_cubit.dart'
+    as _i201;
+import 'package:flutter_clean_starter/features/task_form/cubit/task_form_cubit.dart'
+    as _i716;
 import 'package:flutter_clean_starter/features/tasks/cubit/tasks_cubit.dart'
     as _i612;
 import 'package:get_it/get_it.dart' as _i174;
@@ -132,6 +136,24 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i749.ResetDemoDataUseCase>(
       () => _i749.ResetDemoDataUseCase(gh<_i397.TaskRepository>()),
+    );
+    gh.factoryParam<_i716.TaskFormCubit, String?, dynamic>(
+      (taskId, _) => _i716.TaskFormCubit(
+        taskId,
+        gh<_i749.WatchTaskUseCase>(),
+        gh<_i749.AddTaskUseCase>(),
+        gh<_i749.UpdateTaskUseCase>(),
+        gh<_i454.Clock>(),
+      ),
+    );
+    gh.factoryParam<_i201.TaskDetailCubit, String, dynamic>(
+      (taskId, _) => _i201.TaskDetailCubit(
+        taskId,
+        gh<_i749.WatchTaskUseCase>(),
+        gh<_i749.SetTaskCompletedUseCase>(),
+        gh<_i749.DeleteTaskUseCase>(),
+        gh<_i454.Clock>(),
+      ),
     );
     gh.factory<_i612.TasksCubit>(
       () => _i612.TasksCubit(
