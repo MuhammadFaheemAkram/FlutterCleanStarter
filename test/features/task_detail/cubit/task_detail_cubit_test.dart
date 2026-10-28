@@ -5,9 +5,9 @@ import 'package:flutter_clean_starter/features/task_detail/cubit/task_detail_cub
 import 'package:flutter_clean_starter/features/task_detail/cubit/task_detail_state.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../helpers/data_stack.dart';
-import '../../../helpers/fakes/scripted_deletes.dart';
+import '../../../helpers/fakes/scripted_task_deletes.dart';
 import '../../../helpers/task_fixtures.dart';
+import '../../../helpers/tasks_data_stack.dart';
 import '../../../helpers/wait_for.dart';
 
 void main() {

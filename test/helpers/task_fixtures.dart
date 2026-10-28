@@ -1,12 +1,10 @@
 import 'package:flutter_clean_starter/core/network/dto/task_dto.dart';
+import 'package:flutter_clean_starter/di/injection.dart';
 import 'package:flutter_clean_starter/domain/model/calendar_date.dart';
 import 'package:flutter_clean_starter/domain/model/task.dart';
+import 'package:flutter_clean_starter/domain/repository/task_repository.dart';
 
-/// "Now" in every test: Wednesday 28 October 2026, 14:00 UTC.
-final demoNow = DateTime.utc(2026, 10, 28, 14);
-
-/// The day of [demoNow]: the tests' "today".
-final demoToday = CalendarDate(2026, 10, 28);
+export 'test_clock.dart';
 
 /// A task with sensible defaults; name only what a test is about.
 Task task({
@@ -57,3 +55,7 @@ const demoTaskId = 'A1B2C3D4-0002-4A1B-8C2D-000000000002';
 
 /// Its location, as a link would open it.
 const demoTaskPath = '/tasks/$demoTaskId';
+
+/// For `pumpStarter(beforeLaunch: seedDemo)`: the demo stored before the app
+/// starts, as after a first launch online (to start offline with tasks).
+Future<void> seedDemo() => getIt<TaskRepository>().seedIfNeeded();

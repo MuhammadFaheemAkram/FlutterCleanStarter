@@ -15,18 +15,27 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The Tasks sample's section (Reset demo data) and its Cubit. Without
+    // the sample, this is just `SettingsView(appInfo: getIt<AppInfo>())`.
     return BlocProvider(
       create: (_) => getIt<TasksDemoCubit>(),
-      child: SettingsView(appInfo: getIt<AppInfo>()),
+      child: SettingsView(
+        appInfo: getIt<AppInfo>(),
+        dataSection: const TasksDemoSection(),
+      ),
     );
   }
 }
 
-/// Appearance, the demo data and About.
+/// Appearance, a feature's data section, and About.
 class SettingsView extends StatelessWidget {
-  const SettingsView({super.key, required this.appInfo});
+  const SettingsView({super.key, required this.appInfo, this.dataSection});
 
   final AppInfo appInfo;
+
+  /// A feature's own settings (the Tasks sample's Reset demo data), between
+  /// Appearance and About.
+  final Widget? dataSection;
 
   @override
   Widget build(BuildContext context) {
@@ -38,8 +47,7 @@ class SettingsView extends StatelessWidget {
         children: [
           const SectionHeader('Appearance'),
           const _Appearance(),
-          // The sample feature's section: remove it with the sample.
-          const TasksDemoSection(),
+          ?dataSection,
           const SectionHeader('About'),
           ListTile(
             leading: const Icon(Icons.info_outline),

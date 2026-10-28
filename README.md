@@ -13,89 +13,88 @@ It runs on **Android and iOS**, fully offline: there is **no API key and no serv
 >
 > Every new app needs the same plumbing before its first feature. This template packages the stack and the lessons of six earlier BitFuse Flutter apps (MovieExplorer to Evently) into something you can:
 > 1. **clone** and run straight away (generated code is committed);
-> 2. **rename** with one script (package, app ID, bundle ID, display name);
-> 3. **strip** of the sample feature by deleting a known list of files;
+> 2. **rename** with one script: package, app IDs, display name (`tool/rename.dart`);
+> 3. **strip** of the sample: everything of it has `task` in its name, and the guide lists the few shared edits;
 > 4. **extend** by following the Tasks feature's shape, layer by layer.
 >
-> It is the Flutter edition of a template that also exists natively for [Android](https://github.com/MuhammadFaheemAkram/AndroidCleanStarter) and [iOS](https://github.com/MuhammadFaheemAkram/SwiftStarterKit). Each phase ships with a beginner-to-intermediate friendly write-up in [`docs/`](docs/), which also shows how the Android and iOS editions approached the same step.
+> Both 2 and 3 are **checked**, not just described: a renamed copy analyzes, passes its tests and builds on Android and iOS; a copy with the sample removed analyzes and passes its tests.
+>
+> It is the Flutter edition of a template that also exists natively for [Android](https://github.com/MuhammadFaheemAkram/AndroidCleanStarter) and [iOS](https://github.com/MuhammadFaheemAkram/SwiftStarterKit). Each build phase has a beginner-to-intermediate friendly write-up in [`docs/`](docs/), which also shows how the Android and iOS editions approached the same step.
 
 ---
 
-## 📋 Project Status
+## 📸 Screenshots
 
-The template is built in **strict, reviewable phases**. Each phase ends with:
-- a building app (Android + iOS);
-- a clean analyzer and passing tests;
-- a summary doc;
-- exactly one commit.
+| Tasks | A task | The form |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/tasks-light.png" width="250" alt="The Tasks list: Swap the fake API for a real one, Overdue, due yesterday, with a warning icon; Explore the architecture, due Fri 30 Oct; Rename the project; Welcome to Flutter Clean Starter; Run the test suite, ticked, struck through and marked Done"> | <img src="docs/screenshots/task-light.png" width="250" alt="A task: Explore the architecture, due Fri 30 Oct, a Done switch, its notes, the due date Friday 30 October 2026, and when it was created; Edit and Delete in the app bar"> | <img src="docs/screenshots/edit-light.png" width="250" alt="Edit task as a full-screen dialog with Close and Save: the title, notes, the due date with a Clear button, and a Done switch"> |
 
-| Phase | Scope | Status |
-|------:|-------|:------:|
-| 1 | Foundation: FVM project, design system base, typed routes with a 2-tab shell and the task routes, DI root, CI | ✅ Done |
-| 2 | Core data layer: models, drift, the fake API, repositories, use cases, settings storage | ✅ Done |
-| 3 | The Tasks list: seed on first launch, toggle, swipe to delete with Undo, pull to refresh, every state | ✅ Done |
-| 4 | Task detail and the Add / Edit form: validation, an adaptive date picker, the discard guard, delete with a confirmation | ✅ Done |
-| 5 | Settings: System / Light / Dark app-wide from the first frame, dynamic color (Android 12+), Reset demo data, About | ✅ Done |
-| 6 | Documentation, `tool/rename.dart`, CI | ⏳ Next |
+| Dark | Settings | Android dynamic color |
+|:---:|:---:|:---:|
+| <img src="docs/screenshots/tasks-dark.png" width="250" alt="The Tasks list in dark mode, with the overdue task in a light red and the done task in a light green"> | <img src="docs/screenshots/settings-dark.png" width="250" alt="Settings in dark mode: Appearance System, Light, Dark; Data, Reset demo data; About, Clean Starter, Version 1.0.0 (1), and what the template is"> | <img src="docs/screenshots/android-dynamic-tasks.png" width="250" alt="The Tasks list on Android in the wallpaper's blue, with the same tasks"> |
+
+More, with large text and the dialogs: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md).
 
 ---
 
-## ✨ The Tasks Sample (the plan)
+## ✨ What's Inside
 
-- ✅ **Tasks:** seeded from the fake API on first launch; mark done, swipe to delete with Undo, pull to refresh (the server's tasks are merged in, and your edits are never overwritten)
-- 🗓️ **Due dates:** optional, shown as days, with **Overdue** marked by an icon and the word (never color alone)
-- ✏️ **Add and edit:** a title, notes and a due date, in a full-screen form with validation and a discard guard
-- 🔎 **Detail:** a task's notes and dates, Edit, and Delete with a confirmation
-- ⚙️ **Settings:** System / Light / Dark, dynamic color (Android 12+), Reset demo data, About
-- ♿ **Accessible:** dark mode and large text on every screen, labelled controls, checked by a test tour that grows with the app
+**The template:**
+- 🏛️ **Clean architecture:** View → Cubit → use case → repository → drift or the API; `domain/` in pure Dart.
+- 💾 **Offline-first persistence:** drift as the single source of truth, with `CHECK`s, transactions and an exported schema; settings in `SharedPreferencesWithCache`, loaded before the first frame.
+- 🌐 **A fake API** over bundled JSON, with latency and failures, behind an interface a real `dio` client drops into.
+- 🧭 **Typed navigation:** a tab shell, screens above it, full-screen dialogs, links that open cold with a Close button.
+- 💉 **DI** with `get_it` + `injectable`: `@module`, `@preResolve`, `@factoryParam`.
+- 🎨 **A design system:** themes from one seed, dynamic color on Android 12+, colors that carry meaning, tokens, state views, adaptive dialogs and pickers.
+- ♿ **Accessibility:** dark mode and large text everywhere, labels on everything tappable, never color alone, all checked by a test tour.
+- ✅ **385 tests** at every layer, mutation-checked; CI on every push.
+- 🔧 **`tool/rename.dart`** and **[TEMPLATE_USAGE.md](docs/TEMPLATE_USAGE.md)**.
+
+**The Tasks sample** (to learn from, then delete):
+- seeded from the fake API on first launch; mark done, swipe to delete with Undo, pull to refresh (new server tasks are merged in, your edits never overwritten, a deleted task never revived);
+- due dates as days, with **Overdue** marked by an icon and the word;
+- a detail screen, and one full-screen form for add and edit, with validation and a discard guard;
+- Settings: System / Light / Dark, dynamic color, Reset demo data, About.
+
+---
+
+## 🧬 Start a New App From It
+
+```bash
+git clone https://github.com/MuhammadFaheemAkram/FlutterCleanStarter.git my_app && cd my_app
+fvm install && fvm flutter pub get
+fvm dart run tool/rename.dart --package my_app --app-id com.example.myapp --name "My App"
+fvm dart fix --apply --code=directives_ordering && fvm dart format .
+fvm dart run build_runner build --delete-conflicting-outputs && fvm flutter test
+```
+
+Then [remove the Tasks sample](docs/TEMPLATE_USAGE.md#remove-the-tasks-sample) (or keep it while you learn the shape), and [add your first feature](docs/TEMPLATE_USAGE.md#4-add-a-feature) layer by layer. The guide also covers replacing the fake API, what the template deliberately leaves out (onboarding, auth, notifications, background work, flavors, localization), and a pre-release checklist.
 
 ---
 
 ## 🧰 Tech Stack
 
-Packages arrive in the phase that first needs them, and the list stays short: every package is one a new app is likely to keep.
+The list stays short: every package is one a new app is likely to keep.
 
-| Area | Choice | Since |
-|------|--------|:-----:|
-| Toolchain | Flutter 3.47.6 · Dart 3.13, pinned per project with [FVM](https://fvm.app) (`.fvmrc`) | 1 |
-| Platforms | Android · iOS | 1 |
-| UI | [`material_ui`](https://pub.dev/packages/material_ui): Material 3 as a standalone package; [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) for the iOS touches (alerts, the date wheel, switches) | 1, 4 |
-| Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`) | 1 |
-| Dependency injection | `get_it` + `injectable` (a code-generated composition root, `@preResolve` for the preferences) | 1 |
-| Models | `freezed` (immutable domain models) + `json_serializable` (checked DTOs) | 2 |
-| Database | `drift` + `drift_flutter` (SQLite, typed queries, streams; schema exported from v1) | 2 |
-| Preferences | `shared_preferences` (`SharedPreferencesWithCache`, loaded before the first frame) | 2 |
-| Time and text | `clock` (an injectable "now"), `characters` (title lengths in grapheme clusters), `intl` (dates) | 2–3 |
-| State | `flutter_bloc`: Cubits, one per screen, with one-time effects as serials; one app-wide `SettingsCubit` | 3, 5 |
-| Platform | `dynamic_color` (the wallpaper's palette, Android 12+), `package_info_plus` (About) | 5 |
-| Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
-| Testing | `flutter_test`, `fake_async`, `bloc_test`, `mocktail`, an in-memory drift database and preferences store | 1–3 |
-
-No other packages are planned: a new app adds its own.
+| Area | Choice |
+|------|--------|
+| Toolchain | Flutter 3.47.6 · Dart 3.13, pinned per project with [FVM](https://fvm.app) (`.fvmrc`) |
+| Platforms | Android · iOS |
+| UI | [`material_ui`](https://pub.dev/packages/material_ui) (Material 3 as a standalone package); [`cupertino_ui`](https://pub.dev/packages/cupertino_ui) for the iOS touches (alerts, the date wheel, switches) |
+| State | `flutter_bloc`: a Cubit per screen, and one app-wide `SettingsCubit` |
+| Navigation | `go_router` + `go_router_builder` (typed routes, `StatefulShellRoute`) |
+| Dependency injection | `get_it` + `injectable` (a code-generated composition root) |
+| Models | `freezed` + `json_serializable` (checked DTOs) |
+| Database | `drift` + `drift_flutter` (SQLite, typed queries, streams) |
+| Preferences | `shared_preferences` (`SharedPreferencesWithCache`) |
+| Time and text | `clock` (an injectable "now"), `intl` (dates), `characters` (grapheme-counted limits) |
+| Platform | `dynamic_color` (the wallpaper's palette, Android 12+), `package_info_plus` (About) |
+| Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions |
+| Testing | `flutter_test`, `bloc_test`, `mocktail`, `fake_async`; in-memory drift and preferences |
 
 ---
 
 ## 🏛️ Architecture
-
-A clean, layered architecture with a one-directional data flow:
-
-```
-View ─▶ Cubit ─▶ UseCase ─▶ Repository ─▶ drift (the store) / the fake API (the seed)
-  ▲                                            │
-  └──────────── drift streams ◀────────────────┘
-```
-
-```
-lib/
-├── app/        → root widget (MaterialApp.router, themes)
-├── core/       → common (Result, errors), design system, navigation, database, network (the fake API), storage
-├── data/       → repository implementations + mappers
-├── domain/     → models, pure rules, repository contracts, use cases (pure Dart)
-├── features/   → one folder per screen (Page + View + Cubit)
-└── di/         → composition root (get_it + injectable)
-```
-
-**Data flow:**
 
 ```
                  ┌──────────── reads: drift streams ────────────┐
@@ -107,31 +106,14 @@ View ◀── Cubit ◀── UseCase ◀── TaskRepository ── TasksDao 
                                 TaskApi (FakeTaskApi) ──┘  TaskDto → Task → TaskRow
 ```
 
-- **drift is the source of truth.** Screens watch its streams; the API only seeds the store on first launch, adds the server's new tasks on a refresh, and replaces everything on Reset demo data.
-- **The device owns the tasks.** Adding, editing, completing and deleting are local writes. A refresh never overwrites a stored task (`ON CONFLICT DO NOTHING`), and a tombstone keeps a deleted task from coming back.
-- **Three models per record:** `TaskDto` (the API's JSON) → `Task` (the app's) ↔ `TaskRow` (drift), with mappers that check the server's data before anything is written.
-- **Writes return a `Result`** (`Ok` or `Err` with a sealed `AppException`) and never throw.
-- **Settings are app-wide:** a `SettingsCubit` above `MaterialApp.router` applies the theme mode and dynamic color to every screen at once, starting from the preferences loaded before the first frame.
-- **A Cubit per screen** turns use cases into one immutable state. One-time effects (a SnackBar, the Undo offer) carry a *serial*, so each fires once; the View shows them and navigates, never the Cubit.
+- **drift is the source of truth.** Screens watch its streams; the API only seeds, refreshes and resets.
+- **The device owns its data.** A refresh adds the server's new tasks and never overwrites a stored one (`ON CONFLICT DO NOTHING`); a tombstone keeps a deleted task deleted.
+- **Three models per record** (DTO, domain, row), with mappers that check the server's data before anything is written.
+- **Writes return a `Result`** and never throw; validation is one set of pure rules, shared by the form and the use cases.
+- **A Cubit per screen;** one-time effects carry a serial, so each fires once; navigation stays in the View.
+- **Settings are app-wide,** above `MaterialApp.router`, and right from the first frame.
 
-**Navigation:**
-
-```
-GoRouter (initialLocation: /tasks)
-  │
-  ├─ tab shell     StatefulShellRoute ── MainShell (NavigationBar)
-  │                  /tasks · /settings
-  │
-  └─ root-level    /tasks/new             → the form, a full-screen dialog
-     screens       /tasks/:taskId         → a task, pushed above the tabs
-                   /tasks/:taskId/edit    → the form over its task
-```
-
-Key rules:
-- **Typed routes only:** no string paths in widgets.
-- **Screens above the tabs** are pushed on the root navigator, so Back and the iOS edge swipe return to the tab with its state intact. Links work: `/tasks/t1/edit` opens the form over its task, and a screen opened cold by a link gets a Close button.
-- **Navigation happens in Views,** never in Cubits.
-- **Layer boundaries:** `domain/` is pure Dart, Views never import `data/`, and only `data/` touches the database and the API.
+The full picture (layers and import rules, who owns what, state, errors, navigation, DI, persistence, time, the sample's boundary, key decisions): [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ---
 
@@ -139,74 +121,43 @@ Key rules:
 
 ```
 FlutterCleanStarter/
-├── .fvmrc                          # pinned Flutter version (3.47.6)
-├── .github/workflows/flutter-ci.yml
-├── analysis_options.yaml           # lints + strict analyzer modes
-├── build.yaml                      # lint-free generated files
+├── .fvmrc · analysis_options.yaml · build.yaml · .github/
 ├── lib/
 │   ├── main.dart                   # binding → configureDependencies() → runApp
-│   ├── app/                        # StarterApp: themes and the router
+│   ├── app/                        # StarterApp: the app-wide settings, themes and the router
 │   ├── core/
 │   │   ├── common/                 # Result, AppException, guardWrite, IdGenerator
-│   │   ├── design_system/          # theme/ (AppTheme, AppColors, tokens), widgets/ (state views, ConfirmDialog, DatePickerField, SectionHeader), date_labels, large_text
+│   │   ├── design_system/          # theme/, widgets/, date_labels, large_text
 │   │   ├── navigation/             # app_routes (+ .g.dart), app_router, the Close fallback
-│   │   ├── network/                # AssetJsonLoader, NetworkSimulator, [TaskApi, FakeTaskApi, dto/TaskDto]
-│   │   ├── platform/               # MaterialYouColorSource (dynamic_color)
+│   │   ├── network/                # AssetJsonLoader, NetworkSimulator, [task_api, fake_task_api, dto/task_dto]
 │   │   ├── database/               # AppDatabase, [tables/tasks, daos/tasks_dao]
-│   │   └── storage/                # SettingsLocalDataSource, [TasksPreferences]
-│   ├── data/
-│   │   ├── mapper/                 # [task_mappers]
-│   │   └── repository/             # SettingsRepositoryImpl, [TaskRepositoryImpl]
-│   ├── domain/
-│   │   ├── model/                  # AppSettings, CalendarDate, DeviceColors, AppInfo, [Task, TaskDraft]
-│   │   ├── calculation/            # [task_rules: validation, overdue, ordering]
-│   │   ├── repository/             # SettingsRepository, [TaskRepository]
-│   │   ├── service/                # DynamicColorSource
-│   │   └── usecase/                # settings_use_cases, [task_use_cases]
-│   ├── features/                   # shell, [tasks, task_detail, task_form], settings (page, cubit/SettingsCubit, [cubit/tasks_demo_*, widgets/tasks_demo_section])
+│   │   ├── storage/                # SettingsLocalDataSource, [tasks_preferences]
+│   │   └── platform/               # MaterialYouColorSource
+│   ├── data/                       # [mapper/task_mappers], repository/ (settings, [task])
+│   ├── domain/                     # model/, [calculation/task_rules], repository/, service/, usecase/
+│   ├── features/                   # shell, settings, [tasks, task_detail, task_form]
 │   └── di/                         # injection.dart (+ .config.dart), app_module.dart
 ├── assets/json/                    # [seed_tasks.json]
 ├── drift_schemas/                  # every exported schema version
-└── test/                           # mirrors lib/, plus app/ (the accessibility tour) and helpers/
+├── tool/rename.dart
+└── test/                           # mirrors lib/, plus app/ (flows, the tour), tool/ and helpers/
 ```
 
-`[…]` marks the sample feature: what you delete to start your own app.
-
----
-
-## 🌐 The Fake API and Persistence
-
-- **No server, no key.** `FakeTaskApi` implements `TaskApi` by reading `assets/json/seed_tasks.json` after a simulated 600 ms delay. The seed's due dates are relative (`"dueInDays": 2`), so a fresh demo always has one task due soon and one overdue; once stored, a due date never moves. To see the offline handling, set `NetworkSimulator.shouldThrowError` to `true`.
-- **Tasks live in drift** (`tasks`, plus `deleted_tasks` tombstones). The database enforces its own rules with `CHECK`s: a title that isn't blank, UTC times, an update never before the creation.
-- **Settings live in `SharedPreferencesWithCache`,** loaded before the first frame. Only the keys that changed are written.
-- **Replacing the fake API** means writing a `TaskApi` with `dio` (or `http`) and registering it instead of `FakeTaskApi`: nothing above the data layer changes.
+`[…]` marks the sample: everything with `task` in its name.
 
 ---
 
 ## ▶️ How to Run
 
-Prerequisites:
-- [FVM](https://fvm.app);
-- Xcode, for iOS;
-- the Android SDK, with Java 17+ (Android Studio's bundled JDK works).
+Prerequisites: [FVM](https://fvm.app); Xcode for iOS; the Android SDK with Java 17+ (Android Studio's bundled JDK works).
 
 ```bash
-fvm install            # installs the version pinned in .fvmrc (3.47.6)
+fvm install            # the version pinned in .fvmrc (3.47.6)
 fvm flutter pub get
 fvm flutter run        # pick an Android emulator or an iOS simulator
 ```
 
-Generated code (`*.g.dart`, `*.config.dart`) is committed, so the app runs straight after cloning. After changing annotated code, regenerate it:
-
-```bash
-fvm dart run build_runner build
-```
-
----
-
-## 🧬 Starting a New App From It
-
-The full guide (`docs/TEMPLATE_USAGE.md`) and the rename script (`tool/rename.dart`) arrive in Phase 6: rename the package and IDs, delete the sample feature's files, and add your own features in its shape.
+Generated code (`*.g.dart`, `*.freezed.dart`, `*.config.dart`) is committed. After changing annotated code, regenerate it with `fvm dart run build_runner build --delete-conflicting-outputs`. To see the offline handling, set `NetworkSimulator.shouldThrowError` to `true`.
 
 ---
 
@@ -218,20 +169,17 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**361 tests** after Phase 5:
-- **Settings:** the app-wide Cubit (no flash of the default theme, changes saved and followed, the dynamic seed); Reset demo data (the sample back, offline unchanged, one at a time); the view (segments, a radio list at large text, the dynamic color switch only with wallpaper colors, the reset asking first); app flows (Dark on every screen and from the first frame, Light over a dark device, dynamic color in light and dark and switched off, reset online and offline, About); `overdue` and `done` readable on seven wallpaper hues in both themes; the dynamic color source on iOS, old Android and a failing plugin.
-- **Task detail and the form:** both Cubits on the real data stack (`@factoryParam` ids; not found; toggle; delete never flashing "not found"; validation shown only after Save, the use case never reached when invalid; one save at a time; edits elsewhere never overwriting what's typed; what counts as a change); both views with a mocked Cubit (the discard guard on Close and on the system back gesture, Save disabled while saving, closing once); the adaptive confirm dialog and date picker on Android and iOS; app flows (add, add with a date, discard, edit, toggle, delete with and without confirming, links to missing tasks).
-- **The Tasks screen:** the Cubit on the real data stack (the seed's loading, error and Try again with no "No tasks" flash; refresh messages; toggle; delete at once, Undo, a failed delete; changes from elsewhere); the view in every state with a mocked Cubit (swipe, pull, the SnackBars once); the card (overdue, due, done, the icon at large text, screen-reader labels and a Delete action); app flows on the real DI graph, including the Undo SnackBar sitting above the Add button.
-- **Domain:** `CalendarDate`; the title and notes rules at their limits (grapheme clusters); overdue at its edges; the list's order; the use cases refusing what the form would.
-- **Database (in memory):** every `CHECK`; seed, merge and reset each in one transaction; a refresh that never overwrites an edit or revives a deleted task; delete and Undo; the exported schema matching the tables.
-- **Network and mappers:** the bundled seed decodes and maps, its relative dates, latency and failures, damaged JSON; every mapping rule.
-- **Repositories:** on a real data stack (`DataStack`: in-memory drift and preferences, the real fake API, a fixed clock) with a scripted API for failures: seeding exactly once, refresh, add, edit, toggle, delete and restore, reset, offline and damaged data; settings read, defaults, only changed keys written.
-- **Navigation:** typed locations, ids encoded; the app on its real DI graph: both tabs, a tab keeping its screen, Add as a full-screen dialog with Close, a task pushed above the tabs with Back, Edit over its task, links (`/tasks/new`, `/tasks/t1`, `/tasks/t1/edit`) with a Close button, an unknown location.
-- **Design system:** the themes (from the seed, from any seed or scheme), `AppColors` (`lerp`, `copyWith`, the context shorthand), and WCAG AA contrast of `overdue` and `done` on the page, cards and filled fields in both themes; the large-text rule.
-- **DI:** the real composition root resolves every repository and use case, with the settings loaded before the first frame.
-- **The accessibility tour:** every screen and state (Tasks: the demo, empty, offline, the Undo SnackBar; a task, not found, its Delete dialog; the form with its errors, the discard dialog and the date picker; Settings with and without dynamic color, the reset dialog), in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
+**385 tests**, all on the host:
+- Cubits on a real in-memory data stack;
+- views with mocked Cubits;
+- the database's own rules, the fake API and the mappers;
+- app flows on the real DI graph;
+- the rename script on a copy of the real files;
+- an accessibility tour of every screen and state, in light and dark at 200 % text.
 
-CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
+In every phase, rules were broken on purpose to prove a test notices: **107 mutation checks**, each caught. Details and the gotchas: [docs/TESTING.md](docs/TESTING.md).
+
+CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is current and complete, then runs format, analyze and test.
 
 ---
 
@@ -246,32 +194,27 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 | Concept | Android | iOS | Flutter |
 |---|---|---|---|
 | UI | Jetpack Compose | SwiftUI | widgets + `material_ui` (adaptive where it matters) |
-| Settings | DataStore, a dark-mode toggle, dynamic color | `@AppStorage`, a System / Light / Dark picker | `SharedPreferencesWithCache` + an app-wide Cubit; System / Light / Dark, dynamic color on Android 12+ |
+| Screen state | ViewModel + StateFlow | `@Observable` | Cubit |
+| One-time effects | sealed `Effect` + Channel | a dismiss signal | `BlocListener` on a serial or status |
 | Navigation | Navigation Compose, bottom nav | `TabView` + `NavigationStack` + `Route` | `StatefulShellRoute` + typed routes |
 | Persistence | Room + DataStore | SwiftData + `@AppStorage` | drift + `SharedPreferencesWithCache` |
 | Fake API | Retrofit-style service | protocol + bundled JSON | `TaskApi` + `FakeTaskApi` reading bundled JSON |
-| Screen state | ViewModel + StateFlow | `@Observable` | Cubit |
-| One-time effects | sealed `Effect` + Channel | a dismiss signal | `BlocListener` on a serial |
 | DI | Hilt modules | `AppEnvironment` | `get_it` + `injectable` |
+| Tests | JUnit, Turbine, Compose UI tests | Swift Testing | `flutter_test`, `bloc_test`, `mocktail`, widget tests |
 | CI | `android-ci.yml` | `ios-ci.yml` | `flutter-ci.yml` (generated code checked, format, analyze, test) |
-
-The full table (state, persistence, the fake API, tests) grows with the phases.
+| Template usage | TEMPLATE_USAGE.md | TEMPLATE_USAGE.md | TEMPLATE_USAGE.md + `tool/rename.dart`, both checked on copies |
 
 ---
 
 ## 📚 Documentation
 
-- [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
-- [Phase 2 — Core Data Layer](docs/PHASE_2_SUMMARY.md)
-- [Phase 3 — The Tasks List](docs/PHASE_3_SUMMARY.md)
-- [Phase 4 — Create / Edit + Detail](docs/PHASE_4_SUMMARY.md)
-- [Phase 5 — Settings](docs/PHASE_5_SUMMARY.md)
-
----
-
-## 🗺️ Roadmap
-
-The phases above. Ideas after them (an onboarding gate, authentication, notifications, a real API with `dio`, flavors, localization) are collected in `docs/ROADMAP.md` in Phase 6.
+- [TEMPLATE_USAGE](docs/TEMPLATE_USAGE.md): rename, remove the sample, add a feature, replace the fake API, ship
+- [ARCHITECTURE](docs/ARCHITECTURE.md): layers, data, state, errors, navigation, DI, persistence, time
+- [TESTING](docs/TESTING.md): what's covered, how the tests are built, the mutation checks
+- [LEARNING_NOTES](docs/LEARNING_NOTES.md) and [INTERVIEW_NOTES](docs/INTERVIEW_NOTES.md)
+- [ROADMAP](docs/ROADMAP.md) and [SCREENSHOTS](docs/SCREENSHOTS.md)
+- The build, phase by phase: [1 Foundation](docs/PHASE_1_SUMMARY.md) · [2 Core data layer](docs/PHASE_2_SUMMARY.md) · [3 The Tasks list](docs/PHASE_3_SUMMARY.md) · [4 Create / Edit + Detail](docs/PHASE_4_SUMMARY.md) · [5 Settings](docs/PHASE_5_SUMMARY.md) · [6 Documentation & CI](docs/PHASE_6_SUMMARY.md)
+- [CONTRIBUTING](CONTRIBUTING.md) · [CODE_OF_CONDUCT](CODE_OF_CONDUCT.md) · [SECURITY](SECURITY.md) · [CHANGELOG](CHANGELOG.md)
 
 ---
 

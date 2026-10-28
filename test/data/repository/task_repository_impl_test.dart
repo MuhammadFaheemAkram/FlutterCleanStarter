@@ -4,9 +4,9 @@ import 'package:flutter_clean_starter/domain/model/calendar_date.dart';
 import 'package:flutter_clean_starter/domain/model/task.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../helpers/data_stack.dart';
 import '../../helpers/result_matchers.dart';
 import '../../helpers/task_fixtures.dart';
+import '../../helpers/tasks_data_stack.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

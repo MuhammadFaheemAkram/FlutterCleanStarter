@@ -26,6 +26,13 @@ void main() {
       expect((hue - seedHue).abs(), lessThan(10));
     });
 
+    test("list rows keep their icons level with the title's first line", () {
+      expect(
+        AppTheme.light().listTileTheme.titleAlignment,
+        ListTileTitleAlignment.titleHeight,
+      );
+    });
+
     test('registers the matching AppColors extension for each brightness', () {
       expect(AppTheme.light().extension<AppColors>(), same(AppColors.light));
       expect(AppTheme.dark().extension<AppColors>(), same(AppColors.dark));

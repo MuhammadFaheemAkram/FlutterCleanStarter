@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../../../helpers/pump_app.dart';
-import '../../../helpers/task_fixtures.dart';
+import '../../../helpers/test_clock.dart';
 
 void main() {
   final changes = <CalendarDate?>[];

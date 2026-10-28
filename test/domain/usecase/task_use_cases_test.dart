@@ -4,8 +4,8 @@ import 'package:flutter_clean_starter/domain/model/task.dart';
 import 'package:flutter_clean_starter/domain/usecase/task_use_cases.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../helpers/data_stack.dart';
 import '../../helpers/result_matchers.dart';
+import '../../helpers/tasks_data_stack.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

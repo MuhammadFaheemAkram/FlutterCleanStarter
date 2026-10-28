@@ -27,3 +27,6 @@ targets:
           # analyzer's scope and still report compile errors.
           ignore_for_file:
             - type=lint
+            # drift's database code with no tables yet (an app that removed
+            # the sample) keeps a field it doesn't use.
+            - unused_field

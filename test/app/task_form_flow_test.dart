@@ -177,7 +177,11 @@ void main() {
     });
 
     testWidgets('Delete, cancelled: the task stays', (tester) async {
-      await pumpStarter(tester, initialLocation: demoTaskPath);
+      await pumpStarter(
+        tester,
+        initialLocation: demoTaskPath,
+        beforeLaunch: seedDemo,
+      );
 
       await tester.tapAndSettle(find.byTooltip('Delete'));
       await tester.tapAndSettle(find.text('Cancel'));
@@ -208,7 +212,11 @@ void main() {
     });
 
     testWidgets("to a task's form: saving returns to the task", (tester) async {
-      await pumpStarter(tester, initialLocation: '$demoTaskPath/edit');
+      await pumpStarter(
+        tester,
+        initialLocation: '$demoTaskPath/edit',
+        beforeLaunch: seedDemo,
+      );
 
       await tester.enterText(field('Explore the architecture'), 'Linked edit');
       await save(tester);

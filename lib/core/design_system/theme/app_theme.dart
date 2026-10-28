@@ -50,6 +50,11 @@ abstract final class AppTheme {
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
       ),
+      // A row's icon stays level with its title when large text wraps the
+      // row onto several lines, instead of drifting to the row's middle.
+      listTileTheme: const ListTileThemeData(
+        titleAlignment: ListTileTitleAlignment.titleHeight,
+      ),
     );
   }
 }

@@ -2,7 +2,6 @@ import 'package:flutter_clean_starter/app/starter_app.dart';
 import 'package:flutter_clean_starter/core/design_system/design_system.dart';
 import 'package:flutter_clean_starter/core/network/network_simulator.dart';
 import 'package:flutter_clean_starter/di/injection.dart';
-import 'package:flutter_clean_starter/domain/repository/task_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -11,19 +10,18 @@ import 'test_dependencies.dart';
 
 /// Starts the whole app on the real DI graph (with the swaps of
 /// [configureTestDependencies]), optionally on a deep link, and waits until
-/// the Tasks screen has left its loading state. Pair it with
-/// `tearDown(getIt.reset)`.
+/// no loading screen is left. Pair it with `tearDown(getIt.reset)`.
 ///
-/// - [withDemo]: the demo's five tasks are stored, as after a first launch
-///   online. Without it the store is empty, and the app's first launch
-///   seeds it (unless [preferences] say it already did: `tasks.seeded`).
-/// - [offline]: every request to the fake server fails.
+/// - [beforeLaunch] runs once the graph exists and before the first frame,
+///   on the real event loop (to store data the app should start with).
+/// - [offline]: every request to the fake server fails, from the first
+///   frame.
 /// - [preferences] adds saved settings (raw keys).
 /// - [wallpaperColor]: an Android 12+ device with that wallpaper color.
 Future<void> pumpStarter(
   WidgetTester tester, {
   String? initialLocation,
-  bool withDemo = true,
+  Future<void> Function()? beforeLaunch,
   bool offline = false,
   Map<String, Object> preferences = const {},
   int? wallpaperColor,
@@ -32,11 +30,11 @@ Future<void> pumpStarter(
     preferences: preferences,
     wallpaperColor: wallpaperColor,
   );
-  if (withDemo) {
+  if (beforeLaunch != null) {
     // On the real event loop: before the first pump nothing advances the
     // widget test's fake time, and the database works on the real loop
     // (conventions §11.44).
-    await tester.runAsync(() => getIt<TaskRepository>().seedIfNeeded());
+    await tester.runAsync(beforeLaunch);
   }
   getIt<NetworkSimulator>().failRequests = offline;
   tester.usePhoneSurface();

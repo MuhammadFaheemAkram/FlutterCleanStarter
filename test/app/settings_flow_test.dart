@@ -1,9 +1,8 @@
 import 'package:flutter_clean_starter/app/starter_app.dart';
 import 'package:flutter_clean_starter/core/design_system/design_system.dart';
-import 'package:flutter_clean_starter/core/network/network_simulator.dart';
 import 'package:flutter_clean_starter/core/storage/settings_local_data_source.dart';
 import 'package:flutter_clean_starter/di/injection.dart';
-import 'package:flutter_clean_starter/features/tasks/widgets/task_card.dart';
+import 'package:flutter_clean_starter/features/shell/main_shell.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,7 +11,8 @@ import '../helpers/pump_app.dart';
 import '../helpers/test_dependencies.dart';
 
 // Settings on the real DI graph: the theme app-wide and from the first
-// frame, dynamic color, Reset demo data, About.
+// frame, dynamic color, About. (Reset demo data is the Tasks sample's:
+// `tasks_demo_flow_test.dart`.)
 void main() {
   tearDown(getIt.reset);
 
@@ -36,9 +36,7 @@ void main() {
     await tester.settleRealAsync();
     expect(themeOnTop(tester).brightness, Brightness.dark);
 
-    await tester.tapAndSettle(destination('Tasks'));
-    expect(themeOnTop(tester).brightness, Brightness.dark);
-    await tester.tapAndSettle(find.byType(TaskCard).first);
+    await tester.tapAndSettle(destination(AppTab.values.first.label));
     expect(themeOnTop(tester).brightness, Brightness.dark);
 
     expect(
@@ -153,42 +151,6 @@ void main() {
         themeOnTop(tester).colorScheme.primary,
         AppTheme.light().colorScheme.primary,
       );
-    });
-  });
-
-  group('Reset demo data', () {
-    testWidgets('brings the sample tasks back, and says so', (tester) async {
-      await pumpStarter(tester);
-      await tester.drag(find.text('Rename the project'), const Offset(-600, 0));
-      await tester.settleRealAsync();
-      expect(find.byType(TaskCard), findsNWidgets(4));
-
-      await openSettings(tester);
-      await tester.tapAndSettle(find.text('Reset demo data'));
-      expect(find.text('Reset demo data?'), findsOneWidget);
-      await tester.tap(find.widgetWithText(TextButton, 'Reset'));
-      await tester.pumpUntilFound(find.text('Demo data restored: 5 tasks.'));
-
-      await tester.tapAndSettle(destination('Tasks'));
-      await tester.pumpUntilFound(find.text('Rename the project'));
-      expect(find.byType(TaskCard), findsNWidgets(5));
-    });
-
-    testWidgets('offline: says why, and the tasks stay as they were', (
-      tester,
-    ) async {
-      await pumpStarter(tester);
-      await tester.drag(find.text('Rename the project'), const Offset(-600, 0));
-      await tester.settleRealAsync();
-      getIt<NetworkSimulator>().failRequests = true;
-
-      await openSettings(tester);
-      await tester.tapAndSettle(find.text('Reset demo data'));
-      await tester.tap(find.widgetWithText(TextButton, 'Reset'));
-      await tester.pumpUntilFound(find.textContaining("Couldn't reach"));
-
-      await tester.tapAndSettle(destination('Tasks'));
-      expect(find.byType(TaskCard), findsNWidgets(4));
     });
   });
 

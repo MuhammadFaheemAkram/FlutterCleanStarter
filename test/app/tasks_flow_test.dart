@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 import '../helpers/app_harness.dart';
+import '../helpers/task_fixtures.dart';
 
 // The Tasks screen on the real DI graph: the real repository on an
 // in-memory database, the real fake server with no latency, a fixed clock.
@@ -19,7 +20,7 @@ void main() {
   testWidgets('the first launch seeds the demo, overdue task first', (
     tester,
   ) async {
-    await pumpStarter(tester, withDemo: false);
+    await pumpStarter(tester);
 
     expect(find.byType(TaskCard), findsNWidgets(5));
     expect(find.text('Overdue · due yesterday'), findsOneWidget);
@@ -30,7 +31,7 @@ void main() {
   testWidgets('offline on the first launch: the error, then Try again', (
     tester,
   ) async {
-    await pumpStarter(tester, withDemo: false, offline: true);
+    await pumpStarter(tester, offline: true);
 
     expect(find.text('Something went wrong'), findsOneWidget);
     expect(find.byType(FloatingActionButton), findsNothing);
@@ -44,11 +45,7 @@ void main() {
 
   testWidgets('a launch after the user deleted everything: "No tasks yet", '
       'and Add opens the form', (tester) async {
-    await pumpStarter(
-      tester,
-      withDemo: false,
-      preferences: {'tasks.seeded': true},
-    );
+    await pumpStarter(tester, preferences: {'tasks.seeded': true});
 
     expect(find.text('No tasks yet'), findsOneWidget);
     await tester.tapAndSettle(find.widgetWithText(FilledButton, 'Add task'));
@@ -131,7 +128,7 @@ void main() {
   testWidgets('pull to refresh offline: says why, and the list stays', (
     tester,
   ) async {
-    await pumpStarter(tester, offline: true);
+    await pumpStarter(tester, beforeLaunch: seedDemo, offline: true);
 
     await tester.fling(find.byType(TaskCard).first, const Offset(0, 400), 1000);
     await tester.pumpUntilFound(find.textContaining("Couldn't reach"));
