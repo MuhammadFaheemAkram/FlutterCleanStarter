@@ -20,6 +20,7 @@ void main() {
         bool withDemo = true,
         bool offline = false,
         Map<String, Object> preferences = const {},
+        int? wallpaperColor,
       }) async {
         tester.platformDispatcher
           ..textScaleFactorTestValue = 2
@@ -31,6 +32,7 @@ void main() {
           withDemo: withDemo,
           offline: offline,
           preferences: preferences,
+          wallpaperColor: wallpaperColor,
         );
         // Phone width, but tall enough to lay out every item of a long list:
         // the checks below see only what is built.
@@ -113,6 +115,19 @@ void main() {
         // each is 47.7 px wide, a hair under 48. Not ours to resize; its
         // labels and contrast are still checked.
         await expectAccessible(tester, tapTargets: false);
+      });
+
+      testWidgets('Settings: Android 12+, with dynamic color', (tester) async {
+        await open(tester, at: '/settings', wallpaperColor: 0xFF8E3B46);
+        expect(find.text('Dynamic color'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Settings: "Reset demo data?"', (tester) async {
+        await open(tester, at: '/settings');
+        await tester.tapAndSettle(find.text('Reset demo data'));
+        expect(find.text('Reset demo data?'), findsOneWidget);
+        await expectAccessible(tester);
       });
 
       testWidgets('Task: "Delete this task?"', (tester) async {

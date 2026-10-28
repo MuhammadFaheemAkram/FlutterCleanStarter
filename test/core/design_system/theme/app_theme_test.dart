@@ -122,4 +122,44 @@ void main() {
       }
     }
   });
+
+  // With dynamic color the surfaces follow the wallpaper, but the meaning
+  // colors stay: they must stay readable on any wallpaper's surfaces.
+  group('Contrast under dynamic color', () {
+    const wallpapers = {
+      'red': Color(0xFFB3261E),
+      'orange': Color(0xFFE8710A),
+      'yellow': Color(0xFFF9D648),
+      'green': Color(0xFF1E8E3E),
+      'blue': Color(0xFF1A73E8),
+      'purple': Color(0xFF8E24AA),
+      'grey': Color(0xFF7A7A7A),
+    };
+    for (final MapEntry(key: name, value: wallpaper) in wallpapers.entries) {
+      for (final brightness in Brightness.values) {
+        test(
+          'a $name wallpaper, ${brightness.name}: overdue and done meet AA',
+          () {
+            final theme = AppTheme.fromSeed(wallpaper, brightness);
+            final colors = theme.extension<AppColors>()!;
+            final scheme = theme.colorScheme;
+            for (final background in [
+              scheme.surface,
+              scheme.surfaceContainerLow,
+              scheme.surfaceContainerHighest,
+            ]) {
+              expect(
+                contrast(colors.overdue, background),
+                greaterThanOrEqualTo(4.5),
+              );
+              expect(
+                contrast(colors.done, background),
+                greaterThanOrEqualTo(4.5),
+              );
+            }
+          },
+        );
+      }
+    }
+  });
 }

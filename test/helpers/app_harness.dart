@@ -19,14 +19,19 @@ import 'test_dependencies.dart';
 ///   seeds it (unless [preferences] say it already did: `tasks.seeded`).
 /// - [offline]: every request to the fake server fails.
 /// - [preferences] adds saved settings (raw keys).
+/// - [wallpaperColor]: an Android 12+ device with that wallpaper color.
 Future<void> pumpStarter(
   WidgetTester tester, {
   String? initialLocation,
   bool withDemo = true,
   bool offline = false,
   Map<String, Object> preferences = const {},
+  int? wallpaperColor,
 }) async {
-  await configureTestDependencies(preferences: preferences);
+  await configureTestDependencies(
+    preferences: preferences,
+    wallpaperColor: wallpaperColor,
+  );
   if (withDemo) {
     // On the real event loop: before the first pump nothing advances the
     // widget test's fake time, and the database works on the real loop

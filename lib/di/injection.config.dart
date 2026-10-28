@@ -22,6 +22,8 @@ import 'package:flutter_clean_starter/core/network/fake_task_api.dart' as _i445;
 import 'package:flutter_clean_starter/core/network/network_simulator.dart'
     as _i723;
 import 'package:flutter_clean_starter/core/network/task_api.dart' as _i405;
+import 'package:flutter_clean_starter/core/platform/material_you_color_source.dart'
+    as _i209;
 import 'package:flutter_clean_starter/core/storage/settings_local_data_source.dart'
     as _i373;
 import 'package:flutter_clean_starter/core/storage/tasks_preferences.dart'
@@ -31,14 +33,21 @@ import 'package:flutter_clean_starter/data/repository/settings_repository_impl.d
 import 'package:flutter_clean_starter/data/repository/task_repository_impl.dart'
     as _i707;
 import 'package:flutter_clean_starter/di/app_module.dart' as _i611;
+import 'package:flutter_clean_starter/domain/model/device_info.dart' as _i16;
 import 'package:flutter_clean_starter/domain/repository/settings_repository.dart'
     as _i179;
 import 'package:flutter_clean_starter/domain/repository/task_repository.dart'
     as _i397;
+import 'package:flutter_clean_starter/domain/service/dynamic_color_source.dart'
+    as _i17;
 import 'package:flutter_clean_starter/domain/usecase/settings_use_cases.dart'
     as _i726;
 import 'package:flutter_clean_starter/domain/usecase/task_use_cases.dart'
     as _i749;
+import 'package:flutter_clean_starter/features/settings/cubit/settings_cubit.dart'
+    as _i796;
+import 'package:flutter_clean_starter/features/settings/cubit/tasks_demo_cubit.dart'
+    as _i946;
 import 'package:flutter_clean_starter/features/task_detail/cubit/task_detail_cubit.dart'
     as _i201;
 import 'package:flutter_clean_starter/features/task_form/cubit/task_form_cubit.dart'
@@ -66,8 +75,15 @@ extension GetItInjectableX on _i174.GetIt {
       () => appModule.preferences,
       preResolve: true,
     );
+    await gh.lazySingletonAsync<_i16.AppInfo>(
+      () => appModule.appInfo,
+      preResolve: true,
+    );
     gh.lazySingleton<_i626.TasksDao>(
       () => appModule.tasksDao(gh<_i18.AppDatabase>()),
+    );
+    gh.lazySingleton<_i17.DynamicColorSource>(
+      () => const _i209.MaterialYouColorSource(),
     );
     gh.lazySingleton<_i373.SettingsLocalDataSource>(
       () =>
@@ -78,6 +94,10 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.lazySingleton<_i785.AssetJsonLoader>(
       () => _i785.AssetJsonLoader(gh<_i281.AssetBundle>()),
+    );
+    await gh.lazySingletonAsync<_i16.DeviceColors>(
+      () => appModule.deviceColors(gh<_i17.DynamicColorSource>()),
+      preResolve: true,
     );
     gh.lazySingleton<_i405.TaskApi>(
       () => _i445.FakeTaskApi(
@@ -146,6 +166,15 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i454.Clock>(),
       ),
     );
+    gh.factory<_i796.SettingsCubit>(
+      () => _i796.SettingsCubit(
+        gh<_i179.SettingsRepository>(),
+        gh<_i726.WatchSettingsUseCase>(),
+        gh<_i726.UpdateThemeModeUseCase>(),
+        gh<_i726.UpdateDynamicColorUseCase>(),
+        gh<_i16.DeviceColors>(),
+      ),
+    );
     gh.factoryParam<_i201.TaskDetailCubit, String, dynamic>(
       (taskId, _) => _i201.TaskDetailCubit(
         taskId,
@@ -165,6 +194,9 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i749.RestoreTaskUseCase>(),
         gh<_i454.Clock>(),
       ),
+    );
+    gh.factory<_i946.TasksDemoCubit>(
+      () => _i946.TasksDemoCubit(gh<_i749.ResetDemoDataUseCase>()),
     );
     return this;
   }

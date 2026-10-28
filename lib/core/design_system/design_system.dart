@@ -14,3 +14,4 @@ export 'package:flutter_clean_starter/core/design_system/widgets/empty_state_vie
 export 'package:flutter_clean_starter/core/design_system/widgets/error_view.dart';
 export 'package:flutter_clean_starter/core/design_system/widgets/loading_view.dart';
 export 'package:flutter_clean_starter/core/design_system/widgets/section_header.dart';
+export 'package:flutter_clean_starter/core/design_system/widgets/segmented_choice.dart';
