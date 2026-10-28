@@ -13,16 +13,28 @@ void main() {
 
   for (final brightness in Brightness.values) {
     group('${brightness.name} theme, text at 200%', () {
-      Future<void> open(WidgetTester tester, {required String at}) async {
+      Future<void> open(
+        WidgetTester tester, {
+        required String at,
+        bool withDemo = true,
+        bool offline = false,
+        Map<String, Object> preferences = const {},
+      }) async {
         tester.platformDispatcher
           ..textScaleFactorTestValue = 2
           ..platformBrightnessTestValue = brightness;
         addTearDown(tester.platformDispatcher.clearAllTestValues);
-        await pumpStarter(tester, initialLocation: at);
+        await pumpStarter(
+          tester,
+          initialLocation: at,
+          withDemo: withDemo,
+          offline: offline,
+          preferences: preferences,
+        );
         // Phone width, but tall enough to lay out every item of a long list:
         // the checks below see only what is built.
         tester.view.physicalSize = const Size(390 * 3, 6000 * 3);
-        await tester.pumpAndSettle();
+        await tester.settle();
         final context = tester.element(find.byType(Scaffold).last);
         expect(MediaQuery.textScalerOf(context).scale(10), 20);
         expect(Theme.of(context).brightness, brightness);
@@ -36,8 +48,42 @@ void main() {
         handle.dispose();
       }
 
+      testWidgets('Tasks: the demo (overdue, due, done)', (tester) async {
+        await open(tester, at: '/tasks');
+        expect(find.textContaining('Overdue'), findsOneWidget);
+        expect(find.text('Done'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Tasks: empty', (tester) async {
+        await open(
+          tester,
+          at: '/tasks',
+          withDemo: false,
+          preferences: {'tasks.seeded': true},
+        );
+        expect(find.text('No tasks yet'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Tasks: the first launch offline', (tester) async {
+        await open(tester, at: '/tasks', withDemo: false, offline: true);
+        expect(find.text('Try again'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
+      testWidgets('Tasks: "Task deleted", with Undo', (tester) async {
+        await open(tester, at: '/tasks');
+        await tester.drag(
+          find.text('Rename the project'),
+          const Offset(-600, 0),
+        );
+        await tester.settleRealAsync();
+        expect(find.text('Undo'), findsOneWidget);
+        await expectAccessible(tester);
+      });
+
       for (final (name, location) in [
-        ('Tasks', '/tasks'),
         ('Settings', '/settings'),
         ('Task', '/tasks/t1'),
         ('New task', '/tasks/new'),

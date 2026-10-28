@@ -39,6 +39,8 @@ import 'package:flutter_clean_starter/domain/usecase/settings_use_cases.dart'
     as _i726;
 import 'package:flutter_clean_starter/domain/usecase/task_use_cases.dart'
     as _i749;
+import 'package:flutter_clean_starter/features/tasks/cubit/tasks_cubit.dart'
+    as _i612;
 import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
@@ -130,6 +132,17 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i749.ResetDemoDataUseCase>(
       () => _i749.ResetDemoDataUseCase(gh<_i397.TaskRepository>()),
+    );
+    gh.factory<_i612.TasksCubit>(
+      () => _i612.TasksCubit(
+        gh<_i749.WatchTasksUseCase>(),
+        gh<_i749.SeedTasksUseCase>(),
+        gh<_i749.RefreshTasksUseCase>(),
+        gh<_i749.SetTaskCompletedUseCase>(),
+        gh<_i749.DeleteTaskUseCase>(),
+        gh<_i749.RestoreTaskUseCase>(),
+        gh<_i454.Clock>(),
+      ),
     );
     return this;
   }

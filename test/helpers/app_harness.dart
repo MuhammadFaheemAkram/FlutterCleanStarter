@@ -1,4 +1,8 @@
 import 'package:flutter_clean_starter/app/starter_app.dart';
+import 'package:flutter_clean_starter/core/design_system/design_system.dart';
+import 'package:flutter_clean_starter/core/network/network_simulator.dart';
+import 'package:flutter_clean_starter/di/injection.dart';
+import 'package:flutter_clean_starter/domain/repository/task_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -6,17 +10,33 @@ import 'pump_app.dart';
 import 'test_dependencies.dart';
 
 /// Starts the whole app on the real DI graph (with the swaps of
-/// [configureTestDependencies]), optionally on a deep link. Pair it with
+/// [configureTestDependencies]), optionally on a deep link, and waits until
+/// the Tasks screen has left its loading state. Pair it with
 /// `tearDown(getIt.reset)`.
+///
+/// - [withDemo]: the demo's five tasks are stored, as after a first launch
+///   online. Without it the store is empty, and the app's first launch
+///   seeds it (unless [preferences] say it already did: `tasks.seeded`).
+/// - [offline]: every request to the fake server fails.
+/// - [preferences] adds saved settings (raw keys).
 Future<void> pumpStarter(
   WidgetTester tester, {
   String? initialLocation,
+  bool withDemo = true,
+  bool offline = false,
   Map<String, Object> preferences = const {},
 }) async {
   await configureTestDependencies(preferences: preferences);
+  if (withDemo) {
+    // On the real event loop: before the first pump nothing advances the
+    // widget test's fake time, and the database works on the real loop
+    // (conventions §11.44).
+    await tester.runAsync(() => getIt<TaskRepository>().seedIfNeeded());
+  }
+  getIt<NetworkSimulator>().failRequests = offline;
   tester.usePhoneSurface();
   await tester.pumpWidget(StarterApp(initialLocation: initialLocation));
-  await tester.pumpAndSettle();
+  await tester.settle();
 }
 
 /// The bottom bar's destination labelled [label] (a tab).
@@ -33,6 +53,56 @@ extension AppHarness on WidgetTester {
 
   Future<void> tapAndSettle(Finder finder) async {
     await tap(finder);
-    await pumpAndSettle();
+    await settle();
+  }
+
+  /// `pumpAndSettle` that also waits out a loading screen: a screen that
+  /// opens (Tasks) reads the database on the real event loop, and its
+  /// spinner would never let `pumpAndSettle` finish.
+  Future<void> settle() => settleUntilGone(find.byType(LoadingView));
+
+  /// Taps [finder], then lets the database work it started finish.
+  Future<void> tapAndSettleData(Finder finder) async {
+    await tap(finder);
+    await settleRealAsync();
+  }
+
+  /// Lets work that runs on the real event loop finish (a database write
+  /// started by a tap), then settles.
+  Future<void> settleRealAsync() async {
+    await runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await settle();
+  }
+
+  /// Settles real-loop work in slices until [finder] finds something (a
+  /// flow that alternates fake-time pumps and database work needs several,
+  /// conventions §11.54), failing after [attempts] slices instead of
+  /// hanging.
+  Future<void> pumpUntilFound(Finder finder, {int attempts = 30}) async {
+    for (var i = 0; i < attempts; i++) {
+      if (finder.evaluate().isNotEmpty) return;
+      await settleRealAsync();
+    }
+    expect(finder, findsWidgets, reason: 'never appeared');
+  }
+
+  /// Pumps frame by frame, giving the real event loop (the database) time
+  /// while [finder] finds something, until it finds nothing and no frame is
+  /// scheduled (animations done). Not `pumpAndSettle`: what is waited out
+  /// is often a spinner, which never settles.
+  Future<void> settleUntilGone(Finder finder, {int attempts = 100}) async {
+    for (var i = 0; i < attempts; i++) {
+      await pump(const Duration(milliseconds: 100));
+      final present = finder.evaluate().isNotEmpty;
+      if (!present && !binding.hasScheduledFrame) return;
+      if (present) {
+        await runAsync(
+          () => Future<void>.delayed(const Duration(milliseconds: 10)),
+        );
+      }
+    }
+    expect(finder, findsNothing, reason: 'never went away');
   }
 }

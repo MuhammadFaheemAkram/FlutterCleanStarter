@@ -33,8 +33,8 @@ The template is built in **strict, reviewable phases**. Each phase ends with:
 |------:|-------|:------:|
 | 1 | Foundation: FVM project, design system base, typed routes with a 2-tab shell and the task routes, DI root, CI | ✅ Done |
 | 2 | Core data layer: models, drift, the fake API, repositories, use cases, settings storage | ✅ Done |
-| 3 | The Tasks list | ⏳ Next |
-| 4 | Task detail and the Add / Edit form | |
+| 3 | The Tasks list: seed on first launch, toggle, swipe to delete with Undo, pull to refresh, every state | ✅ Done |
+| 4 | Task detail and the Add / Edit form | ⏳ Next |
 | 5 | Settings | |
 | 6 | Documentation, `tool/rename.dart`, CI | |
 
@@ -65,11 +65,12 @@ Packages arrive in the phase that first needs them, and the list stays short: ev
 | Models | `freezed` (immutable domain models) + `json_serializable` (checked DTOs) | 2 |
 | Database | `drift` + `drift_flutter` (SQLite, typed queries, streams; schema exported from v1) | 2 |
 | Preferences | `shared_preferences` (`SharedPreferencesWithCache`, loaded before the first frame) | 2 |
-| Time and text | `clock` (an injectable "now"), `characters` (title lengths in grapheme clusters) | 2 |
+| Time and text | `clock` (an injectable "now"), `characters` (title lengths in grapheme clusters), `intl` (dates) | 2–3 |
+| State | `flutter_bloc`: Cubits, one per screen, with one-time effects as serials | 3 |
 | Lints / CI | `flutter_lints` + strict analyzer modes; GitHub Actions | 1 |
-| Testing | `flutter_test`, `fake_async`, an in-memory drift database and preferences store | 1 |
+| Testing | `flutter_test`, `fake_async`, `bloc_test`, `mocktail`, an in-memory drift database and preferences store | 1–3 |
 
-Planned: `flutter_bloc`, `bloc_test`, `mocktail`, `intl` (Phase 3); `cupertino_ui` (Phase 4); `dynamic_color`, `package_info_plus` (Phase 5).
+Planned: `cupertino_ui` (Phase 4); `dynamic_color`, `package_info_plus` (Phase 5).
 
 ---
 
@@ -109,6 +110,7 @@ View ◀── Cubit ◀── UseCase ◀── TaskRepository ── TasksDao 
 - **The device owns the tasks.** Adding, editing, completing and deleting are local writes. A refresh never overwrites a stored task (`ON CONFLICT DO NOTHING`), and a tombstone keeps a deleted task from coming back.
 - **Three models per record:** `TaskDto` (the API's JSON) → `Task` (the app's) ↔ `TaskRow` (drift), with mappers that check the server's data before anything is written.
 - **Writes return a `Result`** (`Ok` or `Err` with a sealed `AppException`) and never throw.
+- **A Cubit per screen** turns use cases into one immutable state. One-time effects (a SnackBar, the Undo offer) carry a *serial*, so each fires once; the View shows them and navigates, never the Cubit.
 
 **Navigation:**
 
@@ -157,7 +159,7 @@ FlutterCleanStarter/
 │   │   ├── calculation/            # [task_rules: validation, overdue, ordering]
 │   │   ├── repository/             # SettingsRepository, [TaskRepository]
 │   │   └── usecase/                # settings_use_cases, [task_use_cases]
-│   ├── features/                   # shell, [tasks, task_detail, task_form], settings
+│   ├── features/                   # shell, [tasks (page, cubit/, widgets/TaskCard), task_detail, task_form], settings
 │   └── di/                         # injection.dart (+ .config.dart), app_module.dart
 ├── assets/json/                    # [seed_tasks.json]
 ├── drift_schemas/                  # every exported schema version
@@ -212,7 +214,8 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**169 tests** after Phase 2:
+**228 tests** after Phase 3:
+- **The Tasks screen:** the Cubit on the real data stack (the seed's loading, error and Try again with no "No tasks" flash; refresh messages; toggle; delete at once, Undo, a failed delete; changes from elsewhere); the view in every state with a mocked Cubit (swipe, pull, the SnackBars once); the card (overdue, due, done, the icon at large text, screen-reader labels and a Delete action); app flows on the real DI graph, including the Undo SnackBar sitting above the Add button.
 - **Domain:** `CalendarDate`; the title and notes rules at their limits (grapheme clusters); overdue at its edges; the list's order; the use cases refusing what the form would.
 - **Database (in memory):** every `CHECK`; seed, merge and reset each in one transaction; a refresh that never overwrites an edit or revives a deleted task; delete and Undo; the exported schema matching the tables.
 - **Network and mappers:** the bundled seed decodes and maps, its relative dates, latency and failures, damaged JSON; every mapping rule.
@@ -220,7 +223,7 @@ fvm flutter test
 - **Navigation:** typed locations, ids encoded; the app on its real DI graph: both tabs, a tab keeping its screen, Add as a full-screen dialog with Close, a task pushed above the tabs with Back, Edit over its task, links (`/tasks/new`, `/tasks/t1`, `/tasks/t1/edit`) with a Close button, an unknown location.
 - **Design system:** the themes (from the seed, from any seed or scheme), `AppColors` (`lerp`, `copyWith`, the context shorthand), and WCAG AA contrast of `overdue` and `done` on the page, cards and filled fields in both themes; the large-text rule.
 - **DI:** the real composition root resolves every repository and use case, with the settings loaded before the first frame.
-- **The accessibility tour:** every screen, in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
+- **The accessibility tour:** every screen and state (Tasks: the demo, empty, offline, the Undo SnackBar), in light and dark at 200 % text: no overflow, tap targets ≥ 48 × 48, labels, contrast. The tab labels keep their size at 300 % (a long press shows them).
 
 CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every pull request. It installs the FVM-pinned Flutter, checks that the committed generated code is up to date and complete, then runs format, analyze and test.
 
@@ -240,6 +243,8 @@ CI (`.github/workflows/flutter-ci.yml`) runs on every push to `main` and every p
 | Navigation | Navigation Compose, bottom nav | `TabView` + `NavigationStack` + `Route` | `StatefulShellRoute` + typed routes |
 | Persistence | Room + DataStore | SwiftData + `@AppStorage` | drift + `SharedPreferencesWithCache` |
 | Fake API | Retrofit-style service | protocol + bundled JSON | `TaskApi` + `FakeTaskApi` reading bundled JSON |
+| Screen state | ViewModel + StateFlow | `@Observable` | Cubit |
+| One-time effects | sealed `Effect` + Channel | a dismiss signal | `BlocListener` on a serial |
 | DI | Hilt modules | `AppEnvironment` | `get_it` + `injectable` |
 | CI | `android-ci.yml` | `ios-ci.yml` | `flutter-ci.yml` (generated code checked, format, analyze, test) |
 
@@ -251,6 +256,7 @@ The full table (state, persistence, the fake API, tests) grows with the phases.
 
 - [Phase 1 — Foundation](docs/PHASE_1_SUMMARY.md)
 - [Phase 2 — Core Data Layer](docs/PHASE_2_SUMMARY.md)
+- [Phase 3 — The Tasks List](docs/PHASE_3_SUMMARY.md)
 
 ---
 
