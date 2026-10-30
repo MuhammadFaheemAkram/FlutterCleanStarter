@@ -6,6 +6,9 @@ All notable changes to this project are documented here. The format is based on 
 
 _All six build phases are complete. See [`docs/ROADMAP.md`](docs/ROADMAP.md) for what's next._
 
+### Fixed
+- **The Close fallback** asked `Navigator.canPop()`, which answers for the whole stack: a screen opened by a link and rebuilt while another covered it would lose Close, and have no way out after Back. It now asks its own route (`ModalRoute.impliesAppBarDismissal`, as the `AppBar` does). Tested on the helper itself.
+
 ## [0.6.0] — 2026-10-28 — Phase 6: Documentation & CI
 
 ### Added

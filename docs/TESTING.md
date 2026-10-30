@@ -6,7 +6,7 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**385 tests**, all on the host: no device, no network, no real clock. CI runs the same three commands on every push and pull request, after checking that the committed generated code is current.
+**388 tests**, all on the host: no device, no network, no real clock. CI runs the same three commands on every push and pull request, after checking that the committed generated code is current.
 
 The template's own tests show how each layer is tested; an app built from it keeps the pattern and replaces the sample's.
 
@@ -24,7 +24,7 @@ The template's own tests show how each layer is tested; an app built from it kee
 | Domain rules and models | 24 | `CalendarDate`; titles and notes at their limits, in grapheme clusters; overdue at its edges; the list's order; `DeviceColors`, `AppInfo` |
 | Settings | 20 | The app-wide Cubit (no flash of the default theme, the dynamic seed); Reset demo data; the view (segments, a radio list at large text, the dynamic color switch only with wallpaper colors, the reset asking first) |
 | The rename script | 20 | Every file it changes, `MainActivity` moved and the old folders gone, a second run changing nothing, renaming again, a dry run writing nothing, only what differs changing, a clear error outside a project, nine invalid options |
-| Navigation | 14 | The shell (read from `AppTab`, so it holds for any tabs), typed locations and encoded ids, the form as a full-screen dialog, links with Close, "Page not found" |
+| Navigation | 17 | The shell (read from `AppTab`, so it holds for any tabs), typed locations and encoded ids, the form as a full-screen dialog, links with Close (kept by a screen rebuilt while covered), "Page not found" |
 | Common, DI, platform | 12 | `guardWrite`, UUIDs, the composition root resolving (app-wide and the sample's), the dynamic color source on iOS, old Android and a failing plugin |
 
 ## How the tests are built

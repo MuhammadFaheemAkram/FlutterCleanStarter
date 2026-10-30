@@ -47,7 +47,7 @@ More, with large text and the dialogs: [docs/SCREENSHOTS.md](docs/SCREENSHOTS.md
 - 💉 **DI** with `get_it` + `injectable`: `@module`, `@preResolve`, `@factoryParam`.
 - 🎨 **A design system:** themes from one seed, dynamic color on Android 12+, colors that carry meaning, tokens, state views, adaptive dialogs and pickers.
 - ♿ **Accessibility:** dark mode and large text everywhere, labels on everything tappable, never color alone, all checked by a test tour.
-- ✅ **385 tests** at every layer, mutation-checked; CI on every push.
+- ✅ **388 tests** at every layer, mutation-checked; CI on every push.
 - 🔧 **`tool/rename.dart`** and **[TEMPLATE_USAGE.md](docs/TEMPLATE_USAGE.md)**.
 
 **The Tasks sample** (to learn from, then delete):
@@ -169,7 +169,7 @@ fvm dart format --output=none --set-exit-if-changed .
 fvm flutter test
 ```
 
-**385 tests**, all on the host:
+**388 tests**, all on the host:
 - Cubits on a real in-memory data stack;
 - views with mocked Cubits;
 - the database's own rules, the fake API and the mappers;
